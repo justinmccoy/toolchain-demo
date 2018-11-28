@@ -1,132 +1,69 @@
-#Go Hello World Overview
+# Java Hello World Sample
 
-This app is a hello world plus a little big of basic functionality using Golang.
-The application uses [Gin-Gonic][gin_gonic_url] for the app router and for templating.
+This project contains a simple servlet application.
 
-Also check out a [blog post](https://developer.ibm.com/bluemix/2015/10/28/getting-started-with-golang-on-bluemix/) on this topic as well for a more in depth look at Go and Gin-Gonic.
+[![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/IBM-Bluemix/java-helloworld)
 
-## Build Status
+## Running the application using the command-line
 
-[![Build Status](https://travis-ci.org/IBM-Bluemix/go-hello-world.svg?branch=master)](https://travis-ci.org/IBM-Bluemix/go-hello-world) ![Bluemix Deployments](https://deployment-tracker.mybluemix.net/stats/ec4f40db88c2905bab56e7d183b46d53/badge.svg)
+This project can be built with [Apache Maven](http://maven.apache.org/). The project uses [Liberty Maven Plug-in][] to automatically download and install Liberty from the [Liberty repository](https://developer.ibm.com/wasdev/downloads/). Liberty Maven Plug-in is also used to create, configure, and run the application on the Liberty server. 
 
-## Running the app on Bluemix
+Use the following steps to run the application locally:
 
-You can deploy your own instance of Go Hello World app to Bluemix. To do this, you can either use the _Deploy to Bluemix_ button for an automated deployment or follow the step below to create and deploy your app manually.
+1. Execute full Maven build to create the `target/JavaHelloWorldApp.war` file:
+    ```bash
+    $ mvn clean install
+    ```
 
-[![Deploy to Bluemix](https://deployment-tracker.mybluemix.net/stats/ec4f40db88c2905bab56e7d183b46d53/button.svg)](https://bluemix.net/deploy?repository=https://github.com/IBM-Bluemix/go-hello-world.git)
+2. Download and install Liberty, then use it to run the built application from step 1:
+    ```bash
+    $ mvn liberty:run-server
+    ```
 
-1. [Install Go][go_install_url].  If you have Go installed skip to step 2.
+    Once the server is running, the application will be available under [http://localhost:9080/JavaHelloWorldApp](http://localhost:9080/JavaHelloWorldApp).
 
-2. Create a Bluemix Account
+Use the following command to run the built application in Bluemix:
+    ```bash
+    $ cf push <appname> -p target/JavaHelloWorldApp.war
+    ```
+## Developing and Deploying using Eclipse
 
-    [Sign up for Bluemix][bluemix_signup_url] or use an existing account.
+IBM® Eclipse Tools for Bluemix® provides plug-ins that can be installed into an existing Eclipse environment to assist in integrating the developer's integrated development environment (IDE) with Bluemix.
 
-3. Download and install the [Cloud Foundry CLI][cloud_foundry_url] tool
+1. Download and install  [IBM Eclipse Tools for Bluemix](https://developer.ibm.com/wasdev/downloads/#asset/tools-IBM_Eclipse_Tools_for_Bluemix).
 
+2. Import this sample into Eclipse using `File` -> `Import` -> `Maven` -> `Existing Maven Projects` option.
 
-4. `cd` into the `$GOPATH/src` directory
+3. Create a Liberty server definition:
+  - In the `Servers` view right-click -> `New` -> `Server`
+  - Select `IBM` -> `WebSphere Application Server Liberty`
+  - Choose `Install from an archive or a repository`
+  - Enter a destination path (/Users/username/liberty)
+  - Choose `WAS Liberty with Java EE 7 Web Profile`
+  - Continue the wizard with default options to Finish
 
-  ```
-  cd $GOPATH/src
-  ```
+4. Run your application locally on Liberty:
+  - Right click on the `JavaHelloWorldApp` sample and select `Run As` -> `Run on Server` option
+  - Find and select the localhost Liberty server and press `Finish`
+  - In a few seconds, your application should be running at http://localhost:9080/JavaHelloWorldApp/
 
-5. Clone the app to your local environment from your terminal using the following command:
+5. Create a Bluemix server definition:
+  - In the `Servers` view, right-click -> `New` -> `Server`
+  - Select `IBM` -> `IBM Bluemix` and follow the steps in the wizard.\
+  - Enter your credentials and click `Next`
+  - Select your `org` and `space` and click `Finish`
 
-  ```
-  git clone https://github.com/IBM-Bluemix/go-hello-world.git
-  ```
+6. Run your application on Bluemix:
+  - Right click on the `JavaHelloWorldApp` sample and select `Run As` -> `Run on Server` option
+  - Find and select the `IBM Bluemix` and press `Finish`
+  - A wizard will guide you with the deployment options. Be sure to choose a unique `Name` for your application
+  - In a few minutes, your application should be running at the URL you chose.
 
-6. `cd` into this newly created directory
+## Next Step
+Ready to learn how to interact with a database? Check out this [Sample and tutorial](https://github.com/IBM-Bluemix/get-started-java) to help you get started with a Java EE app, REST API and a database.
 
-  ```
-  cd go-hello-world
-  ```
+## Liberty App Accelerator
 
-7. Compile the Go code:
+For help generating other Liberty samples checkout the Liberty App Accelerator at [wasdev.net/accelerate](http://wasdev.net/accelerate)
 
-  ```
-  $ make
-  ```
-
-8. Open the `manifest.yml` file and change the `host` value to something unique
-
-  The host you choose will determinate the subdomain of your application's URL:  `<host>.mybluemix.net`
-
-9. Connect to Bluemix in the command line tool and follow the prompts to log in:
-
-  ```
-  $ cf api https://api.ng.bluemix.net
-  $ cf login
-  ```
-
-10. Deploy your app to Bluemix:
-
-  ```
-  $ cf push
-  ```
-
-
-And voila! You now have your very own instance of the Go Hello World app running on Bluemix.
-
-## Run the app locally
-
-1. [Install Go][go_install_url].  If you have Go installed skip to step 2.
-
-2. `cd` into the `$GOPATH/src` directory
-
-  ```
-  cd $GOPATH/src
-  ```
-
-3. Clone the app to your local environment from your terminal using the following command:
-
-  ```
-  git clone https://github.com/IBM-Bluemix/go-hello-world.git
-  ```
-
-4. `cd` into this newly created directory
-
-  ```
-  cd go-hello-world
-  ```
-
-
-5. Compile the Go code:
-
-  ```
-  $ make
-  ```
-
-Your app will be automatically be available on port 8080. To access the app, go to localhost:8080 in your browser. Happy developing!
-
-## Contribute
-We are more than happy to accept external contributions to this project, be it in the form of issues and pull requests. If you find a bug, please report it via the [Issues section][issues_url] or even better, fork the project and submit a pull request with your fix! Pull requests will be evaulated on an individual basis based on value add to the sample application.
-
-## Troubleshooting
-
-The primary source of debugging information for your Bluemix app is the logs. To see them, run the following command using the Cloud Foundry CLI:
-
-  ```
-  $ cf logs go-hello-world --recent
-  ```
-For more detailed information on troubleshooting your application, see the [Troubleshooting section](https://www.ng.bluemix.net/docs/troubleshoot/tr.html) in the Bluemix documentation.
-
-## Privacy Notice
-The go-hello-world sample web application includes code to track deployments to Bluemix and other Cloud Foundry platforms. The following information is sent to a [Deployment Tracker](https://github.com/IBM-Bluemix/cf-deployment-tracker-service) service on each deployment:
-
-* Application Name (application_name)
-* Space ID (space_id)
-* Application Version (application_version)
-* Application URIs (application_uris)
-
-This data is collected from the VCAP_APPLICATION environment variable in IBM Bluemix and other Cloud Foundry platforms. This data is used by IBM to track metrics around deployments of sample applications to IBM Bluemix. Only deployments of sample applications that include code to ping the Deployment Tracker service will be tracked.
-
-### Disabling Deployment Tracking
-
-To disable deployment tracking for this app remove the following 2 lines [line 5](https://github.com/IBM-Bluemix/go-hello-world/blob/master/go-hello-world.go#L5) and [line 13](https://github.com/IBM-Bluemix/go-hello-world/blob/master/go-hello-world.go#L13) in [go-hello-world.go](https://github.com/IBM-Bluemix/go-hello-world/blob/master/go-hello-world.go)
-
-[bluemix_signup_url]: https://ibm.biz/go-hello-world-signup
-[cloud_foundry_url]: https://github.com/cloudfoundry/cli/releases
-[issues_url]: https://github.com/IBM-Bluemix/go-hello-world/issues
-[gin_gonic_url]: https://github.com/gin-gonic/gin
-[go_install_url]: https://golang.org/doc/install
+[Liberty Maven Plug-in]: https://github.com/WASdev/ci.maven
