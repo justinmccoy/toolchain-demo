@@ -1,130 +1,167 @@
-# Getting started with PHP on IBM Cloud
+# Django example app: ping-pong matching server
 
-This guide will take you through the steps to get started with a simple PHP application in IBM Cloud and help you:
-- Set up a development environment
-- Download sample code
-- Run the application locally
-- Run the application on IBM Cloud Cloud Foundry
-- Add a IBM Cloud Database service
-- Connect to the database from your local application
+This is an app to match ping-pong players with each other. It's currently an
+API only, so you have to use `curl` to interact with it.
 
-## Prerequisites
+**Note**: We highly recommend that you use the latest versions of any software required by this sample application. 
 
-You'll need the following:
-* [IBM Cloud account](https://console.ng.bluemix.net/registration/)
-* [Cloud Foundry CLI](https://github.com/cloudfoundry/cli#downloads)
-* [Git](https://git-scm.com/downloads)
-* [PHP](http://php.net/downloads.php)
-* [Composer](https://getcomposer.org/download/)
+## Running on [IBM Bluemix](#)
 
-## 1. Clone the sample app
+Log in.
 
-Now you're ready to start working with the app. Clone the repo and change the directory to where the sample app is located.
-  ```
-git clone https://github.com/IBM-Cloud/get-started-php
-cd get-started-php
-  ```
-
-## 2. Run the app locally
-
-Install dependencies
-```
-php composer.phar install
+```bash
+cf login -a https://api.ng.bluemix.net
 ```
 
-Run the app
-  ```
-php -S localhost:8000
-  ```
+Target your org / space. An empty space is recommended, to avoid naming collisions.
 
-View your app at: http://localhost:8000
+```bash
+cf target -o myorg -s myspace
+```
 
-## 3. Prepare the app for deployment
+Sign up for a cleardb instance.
 
-To deploy to IBM Cloud, it can be helpful to set up a manifest.yml file. One is provided for you with the sample. Take a moment to look at it.
+```bash
+cf create-service cleardb spark mysql
+```
 
-The manifest.yml includes basic information about your app, such as the name, how much memory to allocate for each instance and the route. In this manifest.yml **random-route: true** generates a random route for your app to prevent your route from colliding with others.  You can replace **random-route: true** with **host: myChosenHostName**, supplying a host name of your choice. [Learn more...](https://console.bluemix.net/docs/manageapps/depapps.html#appmanifest)
- ```
- applications:
- - name: GetStartedPHP
-   random-route: true
-   memory: 128M
- ```
+Push the app. Its manifest assumes you called your ClearDB instance 'mysql'.
 
-## 4. Deploy the app
+```bash
+cf push -n mysubdomain
+```
 
-You can use the Cloud Foundry CLI to deploy apps.
+Export the test host
 
-Choose your API endpoint
-   ```
-cf api <API-endpoint>
-   ```
-   {: pre}
+```bash
+export HOST=http://mysubdomain.mybluemix.net
+```
 
-Replace the *API-endpoint* in the command with an API endpoint from the following list.
+Now follow the [interaction instructions](#interaction-instructions).
 
-|URL                             |Region          |
-|:-------------------------------|:---------------|
-| https://api.ng.bluemix.net     | US South       |
-| https://api.eu-gb.bluemix.net  | United Kingdom |
-| https://api.eu-de.bluemix.net  | Germany        |
-| https://api.au-syd.bluemix.net | Sydney         |
+NB: By default, the app runs with an insecure, shared
+[SECRET_KEY][django-deployment]. If you care about security in your app, you
+should set this in an environment variable:
 
-Login to your IBM Cloud account
+```bash
+cf set-env djangopong SECRET_KEY thesecretkeythatonlyyouknow
+cf restage djangopong
+```
 
-   ```
-cf login
-   ```
+## Running locally
 
-From within the *get-started-php* directory push your app to IBM Cloud
-   ```
-cf push
-   ```
+The following assumes you have a working, 3.4.x version of [Python][python]
+installed. You'll also need [pip][pip], the Python dependency manager. If you
+installed Python using Homebrew on OSX, you're already set. On Ubuntu, the
+package you want is 'python3-pip'.
 
-This can take a minute. If there is an error in the deployment process you can use the command `cf logs <Your-App-Name> --recent` to troubleshoot.
+Install and start MySQL:
 
-When deployment completes you should a message indicating that your app is running.  View your app at the URL listed in the output of the push command.  You can also issue the
-  ```
-cf apps
-  ```
-command to view your apps status and see the URL.
+```bash
+brew install mysql
+mysql.server start
+mysql -u root
+```
 
-## 5. Add a database
+Create a database user and table in the MySQL REPL you just opened:
 
-Next, we'll add a NoSQL database to this application and set up the application so that it can run locally and on IBM Cloud.
+```sql
+CREATE USER 'djangopong'@'localhost' IDENTIFIED BY 'djangopong';
+CREATE DATABASE pong_matcher_django_development;
+GRANT ALL ON pong_matcher_django_development.* TO 'djangopong'@'localhost';
+exit
+```
 
-1. Log in to IBM Cloud in your Browser. Browse to the `Dashboard`. Select your application by clicking on its name in the `Name` column.
-2. Click on `Connections` then `Connect new`.
-3. In the `Data & Analytics` section, select `Cloudant NoSQL DB` and `Create` the service.
-4. Select `Restage` when prompted. IBM Cloud will restart your application and provide the database credentials to your application using the `VCAP_SERVICES` environment variable. This environment variable is only available to the application when it is running on IBM Cloud.
+Install virtualenv:
 
-Environment variables enable you to separate deployment settings from your source code. For example, instead of hardcoding a database password, you can store this in an environment variable which you reference in your source code. [Learn more...](/docs/manageapps/depapps.html#app_env)
+```bash
+pip3 install virtualenv
+```
 
-## 6. Use the database
+Create and activate a new Python environment:
 
-We're now going to update your local code to point to this database. We'll create a file that will store the credentials for the services the application will use. This file will get used ONLY when the application is running locally. When running in IBM Cloud, the credentials will be read from the VCAP_SERVICES environment variable.
+```bash
+virtualenv env
+source env/bin/activate
+```
 
-1. Create a file called `.env` in the `get-started-php` directory with the following content:
-  ```
-  CLOUDANT_HOST=
-  CLOUDANT_USERNAME=
-  CLOUDANT_PASSWORD=
-  ```
+Install the project's dependencies:
 
-2. Back in the IBM Cloud UI, select your App -> Connections -> Cloudant -> View Credentials
+```bash
+pip install -r requirements.txt --allow-external mysql-connector-python
+```
 
-3. Copy and paste just the `url` from the credentials to the `CLOUDANT_URL` field of the `.env` file and save the changes.  The result will be something like:
-  ```
-  CLOUDANT_HOST=abc...yz.cloudant.com
-  CLOUDANT_USERNAME=abc...yz
-  CLOUDANT_PASSWORD=445d...d1a
-  ```
+Migrate the database:
 
-4. Run your application locally.
-  ```
-php -S localhost:8000
-  ```
+```bash
+./manage.py migrate
+```
 
-View your app at: http://localhost:8080. Any names you enter into the app will now get added to the database.
+Start the application server:
 
-Your local app and  the IBM Cloud app are sharing the database.  View your IBM Cloud app at the URL listed in the output of the push command from above.  Names you add from either app should appear in both when you refresh the browsers.
+```bash
+./manage.py runserver
+```
+
+Export the test host in another shell, ready to run the interactions.
+
+```bash
+export HOST=http://localhost:8000
+```
+
+Now follow the [interaction instructions](#interaction-instructions).
+
+NB: you can also use Foreman to run the migrations and start the app server
+with `foreman start`. However, Foreman defaults to a different port (5000), so
+be sure to export the test host with port 5000 instead of 8000.
+
+## Interaction instructions
+
+Start by clearing the database from any previous tests.  You should get a 200.
+
+```bash
+curl -v -X DELETE $HOST/all
+```
+
+Then request a match, providing both a request ID and player ID. Again, you
+should get a 200.
+
+```bash
+curl -v -H "Content-Type: application/json" -X PUT $HOST/match_requests/firstrequest -d '{"player": "andrew"}'
+```
+
+Now pretend to be someone else requesting a match:
+
+```bash
+curl -v -H "Content-Type: application/json" -X PUT $HOST/match_requests/secondrequest -d '{"player": "navratilova"}'
+```
+
+Let's check on the status of our first match request:
+
+```bash
+curl -v -X GET $HOST/match_requests/firstrequest
+```
+
+The bottom of the output should show you the match_id. You'll need this in the
+next step.
+
+Now pretend that you've got back to your desk and need to enter the result:
+
+```bash
+curl -v -H "Content-Type: application/json" -X POST $HOST/results -d '
+{
+    "match_id":"thematchidyoureceived",
+    "winner":"andrew",
+    "loser":"navratilova"
+}'
+```
+
+You should get a 201 Created response.
+
+Future requests with different player IDs should not cause a match with someone
+who has already played. The program is not yet useful enough to
+allow pairs who've already played to play again.
+
+[python]:https://www.python.org
+[pip]:https://pip.pypa.io/en/latest/
+[django-deployment]:https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/

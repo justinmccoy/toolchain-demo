@@ -1,5 +1,5 @@
 ---
 applications:
- - name: GetStartedPHPDemo
-   random-route: true
-   memory: 128M
+- name: djangopong
+  services:
+  - mysql
