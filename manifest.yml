@@ -1,6 +1,5 @@
 ---
 applications:
-- name: sample-app-not-working
-  random-route: true
-  memory: 256M
-  path: target/JavaHelloWorldApp.war
+ - name: GetStartedPython
+   random-route: true
+   memory: 128M
