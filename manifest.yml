@@ -1,6 +1,6 @@
+---
 applications:
-- instances: 1
-  name: sample-java-helloworld
+- name: sample-java-helloworld-test
   random-route: true
   memory: 256M
   path: target/JavaHelloWorldApp.war
