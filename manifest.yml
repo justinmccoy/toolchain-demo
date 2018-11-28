@@ -1,7 +1,5 @@
 ---
 applications:
-- name: swift-helloworld
+- name: GetStartedRubyRails
   random-route: true
-  memory: 128M
-  instances: 1
-  buildpack: swift_buildpack
+  memory: 256M
