@@ -1,0 +1,7 @@
+---
+applications:
+- name: swift-helloworld
+  random-route: true
+  memory: 128M
+  instances: 1
+  buildpack: swift_buildpack
